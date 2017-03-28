@@ -10,7 +10,7 @@ def resize_file(in_file, out_file, size):
     fd.close()
 
 
-for filename in glob.glob('/home/geetika/captcha/dataset_ssd_1T/new_dataset_website/*.jpg'):
+for filename in glob.glob('dataset_1l_java/*.jpg'):
     resize_file(filename, filename, (200, 50))
 
 

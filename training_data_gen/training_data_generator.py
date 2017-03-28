@@ -52,7 +52,7 @@ class TrainingData(object):
   def GenerateTrainingData(cls,
 			   captchas_dir,
 			   training_data_dir,
-			   max_size=20000,
+			   max_size=100000,
 			   max_captcha_length=8):
     image_shape = _GetShapeOfImagesUnderDir(captchas_dir)
     training_data_shape = tuple(
@@ -77,9 +77,9 @@ class TrainingData(object):
                                               dtype=numpy.int32)
       training_labels[index, :captcha_ids.shape[0]] = captcha_ids
    
-      if i != 0 and (i % 500) == 0:
+      if i != 0 and (i % 10000) == 0:
         print 'Generated {0} examples.'.format(i)
-      if i>19900:
+      if i>99990:
         print i
       if i != 0 and i % max_size == 0:
 	print i
