@@ -6,7 +6,7 @@ import os
 import sys
 import time
 import parse_args
-
+import gc
 from model.nn_model import Model
 import training_data_gen.utils as utils
 from training_data_gen.image_preprocessor import ImagePreprocessor
@@ -24,6 +24,7 @@ def IterateMinibatches(inputs, targets, batch_size, shuffle=False):
       excerpt = indices[start_idx:start_idx + batch_size]
     else:
       excerpt = slice(start_idx, start_idx + batch_size)
+    gc.collect()
     yield inputs[excerpt], targets[excerpt]
 
 
@@ -54,6 +55,8 @@ def Train(train_fn, image_input, target_chars, count_imagestrained_sofar, eval_m
     if use_mask_input:
       train_inputs.append(GetMaskInput(target_chars_batch))
     l_err = train_fn(*train_inputs)
+    gc.collect()
+    print(gc.DEBUG_STATS)
     print("initial error",l_err)
     train_err += l_err
     train_batches += 1
@@ -65,6 +68,7 @@ def Train(train_fn, image_input, target_chars, count_imagestrained_sofar, eval_m
     print("Batch training took {:.3f}s".format(batch_training_time))
     print("  training loss:\t\t{:.6f}".format(batch_training_loss))
  
+  gc.collect()
   training_time = (time.time() - start_time)
   training_loss = (train_err / train_batches)
   print (training_loss , type(training_loss))
@@ -103,12 +107,12 @@ def Test(test_fn, image_input, target_chars, total_images_trained, train_flag, e
   print ("correct: ",corr)
   char_acc = ((test_acc / test_batches) * 100)
   seq_acc = ((seq_test_acc / test_batches) * 100)
-  if train_flag:
+  '''if train_flag:
         print("Testing on training took {:.3f}s".format(time.time() - start_time))
         eval_matrix.number_of_images_training_acc.append((total_images_trained, char_acc, seq_acc)) 
   else:      
         print("Testing on testing data took {:.3f}s".format(time.time() - start_time))
-        eval_matrix.number_of_images_testing_acc.append((total_images_trained, char_acc, seq_acc))
+        eval_matrix.number_of_images_testing_acc.append((total_images_trained, char_acc, seq_acc))'''
         
   print("  loss:\t\t{:.6f}".format(test_err / test_batches))
   print("  char accuracy:\t\t{:.2f} %".format(char_acc))
@@ -183,7 +187,7 @@ class EvalMatrix:
           for elem in self.number_of_images_testing_acc:
               csvwriter.writerow(elem)
 
-def Run(args, num_epochs=2, multi_chars=True, num_softmaxes=None):
+def Run(args, num_epochs=7, multi_chars=True, num_softmaxes=None):
   training_data_dir = args.TrainingDirc
   val_data_file = args.ValidateDirc
   test_data_file = args.TestDirc
@@ -252,12 +256,12 @@ def Run(args, num_epochs=2, multi_chars=True, num_softmaxes=None):
            target_chars[:TEST_BATCH_SIZE],total_images_trained, train_flag, eval_matrix,
            batch_size=TEST_BATCH_SIZE, multi_chars=True,
            use_mask_input=args.use_mask_input)
-      Test(captcha_model.GetTestFn(), val_image_input,
+      '''Test(captcha_model.GetTestFn(), val_image_input,
            val_target_chars, total_images_trained, test_flag, eval_matrix,
            batch_size=TEST_BATCH_SIZE, multi_chars=True,
-           use_mask_input=args.use_mask_input)
-      eval_matrix.update_files()
-      eval_matrix = EvalMatrix(model_params_file_prefix)
+           use_mask_input=args.use_mask_input)'''
+      #eval_matrix.update_files()
+      #eval_matrix = EvalMatrix(model_params_file_prefix)
       if i != 0 and i % 10 == 0:
         print('Processed epoch:{0} {1} training files.'.format(epoch_num + 1 , i))
   
